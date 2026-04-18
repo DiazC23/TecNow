@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" width="900" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0020"/>
+      <stop offset="50%" style="stop-color:#0d0035"/>
+      <stop offset="100%" style="stop-color:#050015"/>
+    </linearGradient>
+    <linearGradient id="textgrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="40%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="dovegrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#38bdf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="200" fill="url(#bg)" rx="12"/>
+
+  <!-- Decorative dots pattern (inspired by Tec logo) -->
+  <circle cx="30" cy="30" r="4" fill="#a78bfa" opacity="0.15"/>
+  <circle cx="50" cy="30" r="4" fill="#38bdf8" opacity="0.12"/>
+  <circle cx="70" cy="30" r="4" fill="#a78bfa" opacity="0.10"/>
+  <circle cx="30" cy="50" r="4" fill="#38bdf8" opacity="0.12"/>
+  <circle cx="50" cy="50" r="4" fill="#ffffff" opacity="0.08"/>
+  <circle cx="70" cy="50" r="4" fill="#38bdf8" opacity="0.10"/>
+  <circle cx="30" cy="70" r="4" fill="#a78bfa" opacity="0.10"/>
+  <circle cx="50" cy="70" r="4" fill="#a78bfa" opacity="0.08"/>
+  <circle cx="70" cy="70" r="4" fill="#ffffff" opacity="0.07"/>
+
+  <circle cx="830" cy="30" r="4" fill="#38bdf8" opacity="0.15"/>
+  <circle cx="850" cy="30" r="4" fill="#a78bfa" opacity="0.12"/>
+  <circle cx="870" cy="30" r="4" fill="#38bdf8" opacity="0.10"/>
+  <circle cx="830" cy="50" r="4" fill="#a78bfa" opacity="0.12"/>
+  <circle cx="850" cy="50" r="4" fill="#ffffff" opacity="0.08"/>
+  <circle cx="870" cy="50" r="4" fill="#a78bfa" opacity="0.10"/>
+  <circle cx="830" cy="70" r="4" fill="#38bdf8" opacity="0.10"/>
+  <circle cx="850" cy="70" r="4" fill="#38bdf8" opacity="0.08"/>
+  <circle cx="870" cy="70" r="4" fill="#ffffff" opacity="0.07"/>
+
+  <!-- More dots bottom corners -->
+  <circle cx="30" cy="140" r="4" fill="#a78bfa" opacity="0.10"/>
+  <circle cx="50" cy="140" r="4" fill="#38bdf8" opacity="0.08"/>
+  <circle cx="30" cy="160" r="4" fill="#38bdf8" opacity="0.08"/>
+  <circle cx="50" cy="160" r="4" fill="#a78bfa" opacity="0.07"/>
+
+  <circle cx="830" cy="140" r="4" fill="#38bdf8" opacity="0.10"/>
+  <circle cx="850" cy="140" r="4" fill="#a78bfa" opacity="0.08"/>
+  <circle cx="830" cy="160" r="4" fill="#a78bfa" opacity="0.08"/>
+  <circle cx="850" cy="160" r="4" fill="#38bdf8" opacity="0.07"/>
+
+  <!-- Dove shape (simplified, inspired by Tec logo) left side -->
+  <g opacity="0.18" transform="translate(110, 55)">
+    <path d="M40,10 Q55,0 70,8 Q80,15 75,28 Q70,40 55,42 Q45,43 35,38 Q20,50 15,65 Q12,72 18,75 Q25,55 40,48 Q35,60 38,72 Q42,60 50,52 Q65,55 72,45 Q82,32 78,18 Q72,5 58,2 Q45,-2 35,8 Z" 
+          fill="url(#dovegrad)" stroke="none"/>
+  </g>
+
+  <!-- Glow behind text -->
+  <rect x="180" y="45" width="540" height="100" rx="8" fill="#4c1d95" opacity="0.12"/>
+
+  <!-- ASCII art TECNOW centrado -->
+  <text font-family="'Courier New', Courier, monospace" font-size="11.5" fill="url(#textgrad)" x="450" text-anchor="middle" opacity="0.92">
+    <tspan x="450" dy="68">████████╗███████╗ ██████╗███╗  ██╗ ██████╗ ██╗    ██╗</tspan>
+    <tspan x="450" dy="14">╚══██╔══╝██╔════╝██╔════╝████╗ ██║██╔═══██╗██║    ██║</tspan>
+    <tspan x="450" dy="14">   ██║   █████╗  ██║     ██╔██╗██║██║   ██║██║ █╗ ██║</tspan>
+    <tspan x="450" dy="14">   ██║   ██╔══╝  ██║     ██║╚████║██║   ██║██║███╗██║</tspan>
+    <tspan x="450" dy="14">   ██║   ███████╗╚██████╗██║ ╚███║╚██████╔╝╚███╔███╔╝</tspan>
+    <tspan x="450" dy="14">   ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚══╝ ╚═════╝  ╚══╝╚══╝ </tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text font-family="'Courier New', Courier, monospace" font-size="11" fill="#38bdf8" x="450" y="188" text-anchor="middle" opacity="0.65" letter-spacing="5">Tecnológico Superior de Jalisco · Foro Estudiantil</text>
+
+  <!-- Border -->
+  <rect width="898" height="198" fill="none" stroke="#4c1d95" stroke-width="1" rx="12" opacity="0.5" x="1" y="1"/>
+  <rect width="894" height="194" fill="none" stroke="#38bdf8" stroke-width="0.5" rx="11" opacity="0.2" x="3" y="3"/>
+</svg>
