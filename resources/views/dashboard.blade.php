@@ -30,17 +30,23 @@
                 </svg>
                 <span class="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
             </button>
-            <div class="flex items-center gap-3 hover:bg-gray-900 px-3 py-2 rounded-lg cursor-pointer transition-colors">
+            <div class="flex items-center gap-3 hover:bg-gray-900 px-3 py-2 rounded-lg transition-colors">
                 <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                 </div>
                 <div class="hidden lg:block">
-                    <p class="text-sm leading-tight">María González</p>
-                    <p class="text-xs text-gray-400">Alumno</p>
+                    <p class="text-sm leading-tight">{{ Auth::user()->name }}</p>
+                    <p class="text-xs text-gray-400">&#64;{{ Auth::user()->username }}</p>
                 </div>
             </div>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="text-xs text-gray-400 hover:text-white transition-colors hidden lg:block">
+                    Cerrar sesión
+                </button>
+            </form>
         </div>
     </div>
 </header>
@@ -64,7 +70,6 @@
                 <span>Comunidades</span>
             </a>
         </nav>
-
         <div class="border-t border-sidebar-border pt-4">
             <div class="flex items-center justify-between mb-3 px-3">
                 <p class="text-sm text-muted-foreground">Mis Comunidades</p>
@@ -100,8 +105,6 @@
 
     {{-- MAIN --}}
     <main class="flex-1 px-4 lg:px-6 py-6">
-
-        {{-- Filtros + botón crear --}}
         <div class="mb-6 flex items-center justify-between flex-wrap gap-4">
             <div class="flex gap-2">
                 @foreach(['popular' => 'Popular', 'reciente' => 'Reciente', 'trending' => 'Trending'] as $key => $label)
@@ -120,79 +123,13 @@
             </button>
         </div>
 
-        {{-- Posts --}}
+        {{-- Posts vacíos por ahora --}}
         <div class="space-y-4">
-            @foreach([
-                [1, '¿Cómo funciona el nuevo sistema de inscripciones?', 'Alguien ya intentó inscribirse este semestre? Tengo dudas sobre el proceso y los requisitos. Me gustaría saber si necesito ir presencialmente o se puede hacer todo en línea.', 'María González', 'alumno', 'ISC', 45, 12, 'Hace 2 horas'],
-                [2, 'Recursos para aprender Laravel 12', 'Comparto esta colección de tutoriales y documentación oficial que me han servido mucho para el proyecto final. Incluye guías de Livewire 3 y FilamentPHP también.', 'Dr. Carlos Ramírez', 'maestro', 'Programación Web', 89, 23, 'Hace 5 horas'],
-                [3, 'Aviso: Mantenimiento de servidores este viernes', 'Se realizará mantenimiento preventivo a los servidores del campus. Los servicios estarán suspendidos de 8pm a 11pm. Planifiquen sus actividades en consecuencia.', 'Admin TSJ', 'admin', 'Avisos Oficiales', 156, 8, 'Hace 1 día'],
-                [4, 'Proyecto integrador: Ideas y colaboración', 'Busco compañeros para trabajar en un proyecto de IoT aplicado a agricultura. Tengo la idea pero necesito apoyo en programación. Interesados escribir por mensaje.', 'Juan Pérez', 'alumno', 'Mecatrónica', 34, 18, 'Hace 3 horas'],
-                [5, 'Tips para el examen de Cálculo Diferencial', 'Después de aprobar con 95, les comparto los temas más importantes y ejercicios que me sirvieron. Enfóquense en límites y derivadas.', 'Ana Martínez', 'alumno', 'Matemáticas', 67, 15, 'Hace 6 horas'],
-            ] as [$id, $title, $content, $author, $role, $community, $votes, $comments, $time])
-
-            @php
-                $badge = match($role) {
-                    'maestro' => ['bg-green-500', 'Maestro'],
-                    'admin'   => ['bg-red-500',   'Admin'],
-                    default   => ['bg-blue-500',  'Alumno'],
-                };
-            @endphp
-
-            <article
-                x-data="{ votes: {{ $votes }}, userVote: null }"
-                class="bg-card border border-border rounded-lg overflow-hidden hover:border-blue-300 transition-colors cursor-pointer">
-                <div class="flex">
-                    {{-- Votos --}}
-                    <div class="flex flex-col items-center gap-1 bg-muted px-3 py-4">
-                        <button @click="userVote === 'up' ? (votes--, userVote = null) : (userVote === 'down' ? (votes += 2, userVote = 'up') : (votes++, userVote = 'up'))"
-                            :class="userVote === 'up' ? 'text-primary' : 'text-muted-foreground'"
-                            class="hover:bg-accent p-1 rounded transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
-                        </button>
-                        <span class="text-sm font-medium"
-                            :class="userVote === 'up' ? 'text-primary' : userVote === 'down' ? 'text-destructive' : 'text-foreground'"
-                            x-text="votes"></span>
-                        <button @click="userVote === 'down' ? (votes++, userVote = null) : (userVote === 'up' ? (votes -= 2, userVote = 'down') : (votes--, userVote = 'down'))"
-                            :class="userVote === 'down' ? 'text-destructive' : 'text-muted-foreground'"
-                            class="hover:bg-accent p-1 rounded transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
-                    </div>
-
-                    {{-- Contenido --}}
-                    <div class="flex-1 p-4">
-                        <div class="flex items-center gap-2 mb-2 flex-wrap">
-                            <span class="text-sm font-medium">c/{{ $community }}</span>
-                            <span class="text-muted-foreground text-sm">•</span>
-                            <span class="text-sm text-muted-foreground">Publicado por {{ $author }}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full text-white {{ $badge[0] }}">{{ $badge[1] }}</span>
-                            <span class="text-muted-foreground text-sm">•</span>
-                            <span class="text-sm text-muted-foreground">{{ $time }}</span>
-                            @if($role === 'admin')
-                                <svg class="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-                            @endif
-                        </div>
-                        <h2 class="mb-2 hover:text-primary transition-colors">{{ $title }}</h2>
-                        <p class="text-muted-foreground mb-4 text-sm leading-relaxed">{{ $content }}</p>
-                        <div class="flex items-center gap-4">
-                            <button class="flex items-center gap-2 text-muted-foreground hover:bg-muted px-3 py-1.5 rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                                <span class="text-sm">{{ $comments }} comentarios</span>
-                            </button>
-                            <button class="flex items-center gap-2 text-muted-foreground hover:bg-muted px-3 py-1.5 rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                                <span class="text-sm">Compartir</span>
-                            </button>
-                            <button class="flex items-center gap-2 text-muted-foreground hover:bg-muted px-3 py-1.5 rounded-lg transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                                <span class="text-sm">Reportar</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            @endforeach
+            <div class="bg-card border border-border rounded-lg p-12 text-center">
+                <svg class="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                <p class="text-muted-foreground text-sm">No hay publicaciones todavía.</p>
+                <p class="text-muted-foreground text-xs mt-1">¡Sé el primero en publicar algo!</p>
+            </div>
         </div>
     </main>
 
@@ -255,15 +192,15 @@
         </div>
         <div class="space-y-4">
             <input type="text" placeholder="Título de la publicación"
-                class="w-full px-3 py-2 rounded-lg border border-border bg-input-background focus:border-primary focus:outline-none" />
-            <select class="w-full px-3 py-2 rounded-lg border border-border bg-input-background focus:border-primary focus:outline-none">
+                class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none" />
+            <select class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none">
                 <option value="">Selecciona una comunidad</option>
                 @foreach(['ISC','Mecatrónica','Industrial','Programación Web','Matemáticas','Avisos Oficiales'] as $c)
                 <option>{{ $c }}</option>
                 @endforeach
             </select>
             <textarea rows="4" placeholder="¿Qué quieres compartir?"
-                class="w-full px-3 py-2 rounded-lg border border-border bg-input-background focus:border-primary focus:outline-none resize-none"></textarea>
+                class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none resize-none"></textarea>
             <div class="flex justify-end gap-3">
                 <button @click="showModal = false"
                     class="px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm">
