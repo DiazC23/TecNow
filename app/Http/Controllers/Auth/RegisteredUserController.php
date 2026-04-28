@@ -33,6 +33,8 @@ public function store(Request $request): RedirectResponse
         'email'    => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/@.+\.tecmm\.edu\.mx$/'],
         'password' => ['required', 'confirmed', Rules\Password::defaults()],
         'avatar'   => ['nullable', 'string'],
+        'security_question' => ['required', 'string'],
+        'security_answer'   => ['required', 'string', 'min:2'],
     ], [
         'email.regex'     => 'Solo se permiten correos institucionales (@*.tecmm.edu.mx).',
         'username.unique' => 'Ese username ya está en uso.',
@@ -46,6 +48,8 @@ public function store(Request $request): RedirectResponse
         'email'    => $request->email,
         'password' => Hash::make($request->password),
         'avatar'   => $request->avatar ?? 'avatar_default.png',
+        'security_question' => $request->security_question,
+        'security_answer'   => strtolower(trim($request->security_answer)),
     ]);
 
     Auth::login($user);
