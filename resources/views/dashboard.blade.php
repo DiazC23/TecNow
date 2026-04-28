@@ -31,11 +31,11 @@
                 <span class="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
             </button>
             <div class="flex items-center gap-3 hover:bg-gray-900 px-3 py-2 rounded-lg transition-colors">
-                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                </div>
+                <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
+    <img src="{{ asset('avatars/' . Auth::user()->avatar) }}"
+        alt="avatar"
+        class="w-full h-full object-cover" />
+</div>
                 <div class="hidden lg:block">
                     <p class="text-sm leading-tight">{{ Auth::user()->name }}</p>
                     <p class="text-xs text-gray-400">&#64;{{ Auth::user()->username }}</p>
