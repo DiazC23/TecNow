@@ -65,7 +65,7 @@
                         <span class="text-gray-600">Recordarme</span>
                     </label>
                     @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="text-primary hover:underline">¿Olvidaste tu contraseña?</a>
+                    <a href="{{ route('recover.show') }}" class="text-sm text-primary hover:underline">¿Olvidaste tu contraseña?</a>
                     @endif
                 </div>
                 <button type="submit"
