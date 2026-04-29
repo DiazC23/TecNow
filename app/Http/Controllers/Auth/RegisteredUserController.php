@@ -21,7 +21,12 @@ class RegisteredUserController extends Controller
         ->values()
         ->toArray();
 
-    return view('auth.register', compact('avatars'));
+    $marcos = collect(glob(public_path('marcos/*.png')))
+        ->map(fn($path) => basename($path))
+        ->values()
+        ->toArray();
+
+    return view('auth.register', compact('avatars', 'marcos'));
 }
 
 public function store(Request $request): RedirectResponse
@@ -33,6 +38,7 @@ public function store(Request $request): RedirectResponse
         'email'    => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/@.+\.tecmm\.edu\.mx$/'],
         'password' => ['required', 'confirmed', Rules\Password::defaults()],
         'avatar'   => ['nullable', 'string'],
+        'marco'    => ['nullable', 'string'],
         'security_question' => ['required', 'string'],
         'security_answer'   => ['required', 'string', 'min:2'],
     ], [
@@ -48,6 +54,7 @@ public function store(Request $request): RedirectResponse
         'email'    => $request->email,
         'password' => Hash::make($request->password),
         'avatar'   => $request->avatar ?? 'avatar_default.png',
+        'marco'    => $request->marco,
         'security_question' => $request->security_question,
         'security_answer'   => strtolower(trim($request->security_answer)),
     ]);

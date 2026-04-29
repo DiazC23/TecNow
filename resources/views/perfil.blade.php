@@ -17,8 +17,11 @@
             <div class="flex items-center gap-4">
                 <a href="/dashboard" class="text-xs text-gray-400 hover:text-white transition-colors">← Dashboard</a>
                 <div class="flex items-center gap-3 px-3 py-2 rounded-lg">
-                    <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
+                    <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary relative">
                         <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" />
+                        @if(Auth::user()->marco)
+                            <img src="{{ asset('marcos/' . Auth::user()->marco) }}" class="absolute inset-0 w-full h-full object-cover z-10" />
+                        @endif
                     </div>
                     <div class="hidden lg:block">
                         <p class="text-sm leading-tight">{{ Auth::user()->name }}</p>
@@ -63,9 +66,12 @@
             {{-- Info --}}
             <div class="px-6 pb-6">
                 <div class="flex items-end justify-between -mt-12 mb-4 flex-wrap gap-4">
-                    <div class="relative">
+                    <div class="relative w-24 h-24">
                         <img src="{{ asset('avatars/' . Auth::user()->avatar) }}"
-                            class="w-24 h-24 rounded-full border-4 border-white object-cover shadow-md" />
+                            class="w-full h-full rounded-full border-4 border-white object-cover shadow-md" />
+                        @if(Auth::user()->marco)
+                            <img src="{{ asset('marcos/' . Auth::user()->marco) }}" class="absolute inset-0 w-full h-full z-10 pointer-events-none" />
+                        @endif
                     </div>
                     <div class="flex items-end justify-between -mt-12 mb-4 flex-wrap gap-10">
                         <button onclick="document.getElementById('passModal').classList.remove('hidden')"
@@ -142,22 +148,45 @@
                 @csrf
                 @method('PATCH')
 
-                {{-- Avatar --}}
-                <div class="flex flex-col items-center mb-2">
-                    <div class="relative">
-                        <img id="editAvatarPreview" src="{{ asset('avatars/' . Auth::user()->avatar) }}"
-                            class="w-20 h-20 rounded-full border-4 border-primary object-cover shadow-md" />
-                        <button type="button"
-                            onclick="document.getElementById('avatarPickerModal').classList.remove('hidden')"
-                            class="absolute bottom-0 right-0 text-white w-7 h-7 rounded-full flex items-center justify-center shadow transition-transform hover:scale-110"
-                            style="background-color: #1e40af;">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
-                            </svg>
-                        </button>
+                {{-- Avatar y Marco --}}
+                <div class="flex flex-col items-center mb-4 gap-4">
+                    <div class="flex gap-6 items-center">
+                        <div class="relative text-center">
+                            <p class="text-xs text-gray-500 mb-1">Avatar</p>
+                            <div class="relative w-20 h-20">
+                                <img id="editAvatarPreview" src="{{ asset('avatars/' . Auth::user()->avatar) }}"
+                                    class="w-full h-full rounded-full border-4 border-primary object-cover shadow-md" />
+                                <button type="button"
+                                    onclick="document.getElementById('avatarPickerModal').classList.remove('hidden')"
+                                    class="absolute bottom-0 right-0 text-white w-7 h-7 rounded-full flex items-center justify-center shadow transition-transform hover:scale-110 z-20"
+                                    style="background-color: #1e40af;">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <input type="hidden" name="avatar" id="editAvatarField" value="{{ Auth::user()->avatar }}" />
+                        </div>
+
+                        <div class="relative text-center">
+                            <p class="text-xs text-gray-500 mb-1">Marco</p>
+                            <div class="relative w-20 h-20 bg-gray-100 rounded-full border-4 border-gray-200">
+                                <img id="editMarcoPreview" src="{{ Auth::user()->marco ? asset('marcos/' . Auth::user()->marco) : '' }}"
+                                    class="w-full h-full object-cover z-10 {{ Auth::user()->marco ? '' : 'hidden' }}" />
+                                <button type="button"
+                                    onclick="document.getElementById('marcoPickerModal').classList.remove('hidden')"
+                                    class="absolute bottom-0 right-0 text-white w-7 h-7 rounded-full flex items-center justify-center shadow transition-transform hover:scale-110 z-20"
+                                    style="background-color: #1e40af;">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <input type="hidden" name="marco" id="editMarcoField" value="{{ Auth::user()->marco }}" />
+                        </div>
                     </div>
-                    <input type="hidden" name="avatar" id="editAvatarField" value="{{ Auth::user()->avatar }}" />
                 </div>
 
                 {{-- Username --}}
@@ -195,7 +224,7 @@
         <div class="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm z-10">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-gray-900">Elige tu avatar</h3>
-                <button onclick="document.getElementById('avatarPickerModal').classList.add('hidden')"
+                <button type="button" onclick="document.getElementById('avatarPickerModal').classList.add('hidden')"
                     class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -207,6 +236,34 @@
                     <button type="button" onclick="selectEditAvatar('{{ $avatar }}')"
                         class="rounded-full overflow-hidden aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all">
                         <img src="/avatars/{{ $avatar }}" class="w-full h-full object-cover" />
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal selección de marco --}}
+    <div id="marcoPickerModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center px-4">
+        <div class="absolute inset-0 bg-black/60"
+            onclick="document.getElementById('marcoPickerModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-900">Elige tu marco</h3>
+                <button type="button" onclick="document.getElementById('marcoPickerModal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+                <button type="button" onclick="selectEditMarco('')" class="rounded-full flex items-center justify-center bg-gray-100 text-gray-500 text-xs aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all">
+                    Ninguno
+                </button>
+                @foreach (collect(glob(public_path('marcos/*.png')))->map(fn($p) => basename($p)) as $marco)
+                    <button type="button" onclick="selectEditMarco('{{ $marco }}')"
+                        class="rounded-full overflow-hidden aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all bg-gray-100">
+                        <img src="/marcos/{{ $marco }}" class="w-full h-full object-cover" />
                     </button>
                 @endforeach
             </div>
@@ -272,6 +329,18 @@
             document.getElementById('editAvatarPreview').src = '/avatars/' + filename;
             document.getElementById('editAvatarField').value = filename;
             document.getElementById('avatarPickerModal').classList.add('hidden');
+        }
+        function selectEditMarco(filename) {
+            let preview = document.getElementById('editMarcoPreview');
+            if (filename) {
+                preview.src = '/marcos/' + filename;
+                preview.classList.remove('hidden');
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+            }
+            document.getElementById('editMarcoField').value = filename;
+            document.getElementById('marcoPickerModal').classList.add('hidden');
         }
     </script>
 @endsection

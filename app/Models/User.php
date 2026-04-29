@@ -17,6 +17,8 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar',
+        'marco',
+        'global_role',
         'security_question',
         'security_answer',
     ];
@@ -32,5 +34,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function communities()
+    {
+        return $this->belongsToMany(Community::class)->withPivot('role')->withTimestamps();
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
     }
 }

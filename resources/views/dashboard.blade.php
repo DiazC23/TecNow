@@ -35,8 +35,11 @@
                 <div class="flex items-center gap-3 hover:bg-gray-900 px-3 py-2 rounded-lg transition-colors">
                     <a href="{{ route('perfil') }}"
                         class="flex items-center gap-3 hover:bg-gray-900 px-3 py-2 rounded-lg transition-colors">
-                        <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary">
+                        <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary relative">
                             <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" />
+                            @if(Auth::user()->marco)
+                                <img src="{{ asset('marcos/' . Auth::user()->marco) }}" class="absolute inset-0 w-full h-full object-cover z-10" />
+                            @endif
                         </div>
                         <div class="hidden lg:block">
                             <p class="text-sm leading-tight">{{ Auth::user()->name }}</p>
@@ -55,7 +58,7 @@
     </header>
 
     {{-- BODY --}}
-    <div x-data="{ filter: 'popular', showModal: false }" class="flex max-w-[1400px] mx-auto">
+    <div x-data="{ filter: 'popular', showModal: false, showCommunityModal: false, showAddAdminModal: false, selectedCommunityId: null }" class="flex max-w-[1400px] mx-auto">
 
         {{-- SIDEBAR --}}
         <aside
@@ -96,14 +99,23 @@
                     </button>
                 </div>
                 <div class="space-y-1">
-                    @foreach ([['💻', 'ISC', '450'], ['⚙️', 'Mecatrónica', '320'], ['🏭', 'Industrial', '280'], ['🌐', 'Programación Web', '520'], ['📐', 'Matemáticas', '410'], ['📢', 'Avisos Oficiales', '890'], ['🎭', 'Eventos y Cultura', '340'], ['⚽', 'Deportes TSJ', '210']] as [$icon, $name, $members])
+                    @foreach ($communities as $community)
                         <button
                             class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left">
-                            <span class="text-lg">{{ $icon }}</span>
+                            <span class="text-lg">{{ $community->icon }}</span>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm truncate">{{ $name }}</p>
-                                <p class="text-xs text-muted-foreground">{{ $members }} miembros</p>
+                                <p class="text-sm truncate">{{ $community->name }}</p>
+                                <p class="text-xs text-muted-foreground">{{ $community->users_count }} miembros</p>
                             </div>
+                            @php
+                                $isForumAdmin = $community->users()->where('user_id', Auth::id())->wherePivot('role', 'admin')->exists();
+                                $isGlobalAdmin = Auth::user()->global_role === 'admin';
+                            @endphp
+                            @if($isForumAdmin || $isGlobalAdmin)
+                            <button type="button" @click.prevent="selectedCommunityId = {{ $community->id }}; showAddAdminModal = true" class="text-xs text-primary hover:text-blue-400 p-1 bg-gray-800 rounded z-10 relative">
+                                +Admin
+                            </button>
+                            @endif
                         </button>
                     @endforeach
                 </div>
@@ -111,6 +123,12 @@
                     class="w-full mt-3 px-3 py-2 text-sm text-primary hover:bg-sidebar-accent rounded-lg transition-colors">
                     Ver todas las comunidades
                 </button>
+                @if(Auth::user()->global_role === 'admin')
+                <button @click="showCommunityModal = true"
+                    class="w-full mt-3 px-3 py-2 text-sm bg-primary text-white hover:bg-blue-700 rounded-lg transition-colors">
+                    + Crear Comunidad
+                </button>
+                @endif
             </div>
         </aside>
 
@@ -136,17 +154,50 @@
                 </button>
             </div>
 
-            {{-- Posts vacíos por ahora --}}
+            {{-- Posts --}}
             <div class="space-y-4">
-                <div class="bg-card border border-border rounded-lg p-12 text-center">
-                    <svg class="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                    <p class="text-muted-foreground text-sm">No hay publicaciones todavía.</p>
-                    <p class="text-muted-foreground text-xs mt-1">¡Sé el primero en publicar algo!</p>
-                </div>
+                @forelse($posts as $post)
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden relative border border-gray-300">
+                                    <img src="{{ asset('avatars/'.$post->user->avatar) }}" class="w-full h-full object-cover">
+                                    @if($post->user->marco)
+                                        <img src="{{ asset('marcos/'.$post->user->marco) }}" class="absolute inset-0 w-full h-full object-cover z-10" />
+                                    @endif
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold">{{ $post->user->name }} <span class="text-gray-500 font-normal text-xs">en</span> {{ $post->community->name }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ $post->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                            @php
+                                $isAuthor = $post->user_id === Auth::id();
+                                $isForumAdmin = $post->community->users()->where('user_id', Auth::id())->wherePivot('role', 'admin')->exists();
+                                $isGlobalAdmin = Auth::user()->global_role === 'admin';
+                            @endphp
+                            @if($isAuthor || $isForumAdmin || $isGlobalAdmin)
+                            <form action="{{ route('posts.destroy', $post) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-500 hover:text-red-700 text-xs">Eliminar</button>
+                            </form>
+                            @endif
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">{{ $post->title }}</h3>
+                        <p class="text-sm text-foreground whitespace-pre-wrap">{{ $post->content }}</p>
+                    </div>
+                @empty
+                    <div class="bg-card border border-border rounded-lg p-12 text-center">
+                        <svg class="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                        <p class="text-muted-foreground text-sm">No hay publicaciones todavía.</p>
+                        <p class="text-muted-foreground text-xs mt-1">¡Sé el primero en publicar algo!</p>
+                    </div>
+                @endforelse
             </div>
         </main>
 
@@ -204,29 +255,79 @@
                     </svg>
                 </button>
             </div>
-            <div class="space-y-4">
-                <input type="text" placeholder="Título de la publicación"
-                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none" />
-                <select
-                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none">
+            <form action="{{ route('posts.store') }}" method="POST" class="space-y-4">
+                @csrf
+                <input type="text" name="title" placeholder="Título de la publicación" required
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none text-gray-900" />
+                <select name="community_id" required
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none text-gray-900">
                     <option value="">Selecciona una comunidad</option>
-                    @foreach (['ISC', 'Mecatrónica', 'Industrial', 'Programación Web', 'Matemáticas', 'Avisos Oficiales'] as $c)
-                        <option>{{ $c }}</option>
+                    @foreach ($communities as $c)
+                        <option value="{{ $c->id }}">{{ $c->name }}</option>
                     @endforeach
                 </select>
-                <textarea rows="4" placeholder="¿Qué quieres compartir?"
-                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none resize-none"></textarea>
+                <textarea rows="4" name="content" placeholder="¿Qué quieres compartir?" required
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none resize-none text-gray-900"></textarea>
                 <div class="flex justify-end gap-3">
-                    <button @click="showModal = false"
-                        class="px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm">
+                    <button type="button" @click="showModal = false"
+                        class="px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm text-gray-900 bg-white">
                         Cancelar
                     </button>
-                    <button @click="showModal = false"
+                    <button type="submit"
                         class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-blue-700 transition-colors text-sm">
                         Publicar
                     </button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- MODAL crear comunidad --}}
+    <div x-show="showCommunityModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/60" @click="showCommunityModal = false"></div>
+        <div class="relative bg-card border border-border rounded-lg p-6 w-full max-w-lg mx-4 z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3>Crear Comunidad</h3>
+                <button @click="showCommunityModal = false" class="text-muted-foreground hover:text-foreground">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
+            <form action="{{ route('communities.store') }}" method="POST" class="space-y-4">
+                @csrf
+                <input type="text" name="name" placeholder="Nombre del foro" required
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none text-gray-900" />
+                <textarea rows="2" name="description" placeholder="Descripción breve"
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted focus:border-primary focus:outline-none resize-none text-gray-900"></textarea>
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="showCommunityModal = false"
+                        class="px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm text-gray-900 bg-white">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-blue-700 transition-colors text-sm">
+                        Crear
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- MODAL añadir admin --}}
+    <div x-show="showAddAdminModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/60" @click="showAddAdminModal = false"></div>
+        <div class="relative bg-card border border-border rounded-lg p-6 w-full max-w-sm mx-4 z-10">
+            <h3>Añadir Administrador al Foro</h3>
+            <form :action="'/communities/' + selectedCommunityId + '/add-admin'" method="POST" class="space-y-4 mt-4">
+                @csrf
+                <input type="text" name="username" placeholder="Username del usuario" required
+                    class="w-full px-3 py-2 rounded-lg border border-border bg-muted text-gray-900 focus:outline-none focus:border-primary" />
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="showAddAdminModal = false" class="px-4 py-2 border rounded-lg text-sm bg-white text-black hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white hover:bg-blue-700 rounded-lg text-sm">Añadir</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection

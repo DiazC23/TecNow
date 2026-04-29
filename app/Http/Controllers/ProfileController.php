@@ -13,6 +13,7 @@ class ProfileController extends Controller
         $request->validate([
             'username' => ['required', 'string', 'min:3', 'max:20', 'unique:users,username,' . Auth::id(), 'regex:/^[a-zA-Z0-9_]+$/'],
             'avatar'   => ['nullable', 'string'],
+            'marco'    => ['nullable', 'string'],
         ], [
             'username.unique' => 'Ese username ya está en uso.',
             'username.regex'  => 'Solo letras, números y guión bajo.',
@@ -22,6 +23,7 @@ class ProfileController extends Controller
         Auth::user()->update([
             'username' => $request->username,
             'avatar'   => $request->avatar ?? Auth::user()->avatar,
+            'marco'    => $request->has('marco') ? $request->marco : Auth::user()->marco,
         ]);
 
         return redirect()->route('perfil')->with('success', '¡Perfil actualizado!');
