@@ -30,22 +30,41 @@
                 <form method="POST" action="{{ route('register') }}" class="space-y-4" id="registerForm">
                     @csrf
 
-                    <div class="flex flex-col items-center mb-2">
-                        <div class="relative">
-                            <img id="avatarPreview" src="/avatars/{{ $avatars[0] ?? 'avatar_default.png' }}"
-                                class="w-24 h-24 rounded-full border-4 border-primary object-cover shadow-md" />
-                            <button type="button"
-                                onclick="document.getElementById('avatarModal').classList.remove('hidden')"
-                                class="absolute bottom-0 right-0 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shadow hover:bg-blue-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
-                                </svg>
-                            </button>
+                    <div class="flex flex-col items-center mb-6 gap-4">
+                        <p class="text-sm font-medium text-gray-700">Personaliza tu perfil</p>
+                        <div class="flex gap-6 items-center">
+                            <div class="relative text-center">
+                                <p class="text-xs text-gray-500 mb-1">Avatar</p>
+                                <div class="relative w-20 h-20">
+                                    <img id="avatarPreview" src="/avatars/{{ $avatars[0] ?? 'avatar_default.png' }}"
+                                        class="w-full h-full rounded-full border-4 border-primary object-cover shadow-md" />
+                                    <button type="button"
+                                        onclick="document.getElementById('avatarModal').classList.remove('hidden')"
+                                        class="absolute bottom-0 right-0 bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform z-20">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="avatar" id="avatarField" value="{{ $avatars[0] ?? 'avatar_default.png' }}" />
+                            </div>
+
+                            <div class="relative text-center">
+                                <p class="text-xs text-gray-500 mb-1">Marco</p>
+                                <div class="relative w-20 h-20 bg-gray-100 rounded-full border-4 border-gray-200">
+                                    <img id="marcoPreview" src=""
+                                        class="w-full h-full object-cover z-10 hidden" />
+                                    <button type="button"
+                                        onclick="document.getElementById('marcoModal').classList.remove('hidden')"
+                                        class="absolute bottom-0 right-0 bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform z-20">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="marco" id="marcoField" value="" />
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2">Elige tu avatar</p>
-                        <input type="hidden" name="avatar" id="avatarField"
-                            value="{{ $avatars[0] ?? 'avatar_default.png' }}" />
                     </div>
 
                     <div>
@@ -168,11 +187,51 @@
         </div>
     </div>
 
+    {{-- Modal marcos --}}
+    <div id="marcoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div class="absolute inset-0 bg-black/60"
+            onclick="document.getElementById('marcoModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-900">Elige tu marco</h3>
+                <button type="button" onclick="document.getElementById('marcoModal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+                <button type="button" onclick="selectMarco('')" class="rounded-full flex items-center justify-center bg-gray-100 text-gray-500 text-xs aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all">
+                    Ninguno
+                </button>
+                @foreach ($marcos as $marco)
+                    <button type="button" onclick="selectMarco('{{ $marco }}')"
+                        class="rounded-full overflow-hidden aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all bg-gray-100">
+                        <img src="/marcos/{{ $marco }}" class="w-full h-full object-cover" />
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     <script>
         function selectAvatar(filename) {
             document.getElementById('avatarPreview').src = '/avatars/' + filename;
             document.getElementById('avatarField').value = filename;
             document.getElementById('avatarModal').classList.add('hidden');
+        }
+        function selectMarco(filename) {
+            let preview = document.getElementById('marcoPreview');
+            if (filename) {
+                preview.src = '/marcos/' + filename;
+                preview.classList.remove('hidden');
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+            }
+            document.getElementById('marcoField').value = filename;
+            document.getElementById('marcoModal').classList.add('hidden');
         }
     </script>
 
