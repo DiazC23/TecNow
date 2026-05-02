@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PostVoteController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RecoverPasswordController;
@@ -14,8 +15,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $communities = \App\Models\Community::withCount('users')->get();
-        // $posts = \App\Models\Post::with(['user', 'community'])->latest()->get();
-        $posts = \App\Models\Post::with(['user', 'communities'])->latest()->get();
+        $posts = \App\Models\Post::with(['user', 'communities', 'votes'])->latest()->get();
 
         return view('dashboard', compact('communities', 'posts'));
     })->name('dashboard');
@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     // Nueva ruta experimental
     Route::get('/perfil', function () {
         $posts = \App\Models\Post::where('user_id', Auth::id())
+            ->with('votes')
             ->latest()
             ->get();
         return view('perfil', compact('posts'));
@@ -45,9 +46,11 @@ Route::middleware('auth')->group(function () {
     // Rutas para manejar los posts de los usuarios
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create')->middleware('auth');
 
-    // Código experimental para POSTS
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
+
+    // Funciones experimentales
+    Route::post('/posts/{post}/vote', [PostVoteController::class, 'vote'])->name('posts.vote');
 });
 
 // Recuperar contrasenas
