@@ -11,35 +11,67 @@ class PostController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
-            'community_id' => 'required|exists:communities,id',
-            'title' => 'required|string|max:255',
+        $validated = $request->validate([
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
+            'image'   => 'nullable|image|max:2048',
         ]);
 
-        Post::create([
-            'community_id' => $request->community_id,
+        $post = Post::create([
             'user_id' => Auth::id(),
-            'title' => $request->title,
-            'content' => $request->content,
+            'title'   => $validated['title'],
+            'content' => $validated['content'],
         ]);
 
-        return back()->with('success', 'Publicación creada exitosamente.');
+        // Si en el futuro viene un community_id (desde la vista de una comunidad):
+        // $post->communities()->attach($request->community_id);
+
+        return redirect()->route('perfil')->with('success', 'Publicación creada exitosamente.');
     }
 
     public function destroy(Post $post)
     {
-        $community = $post->community;
-        $isAuthor = $post->user_id === Auth::id();
-        $isForumAdmin = $community->users()->where('user_id', Auth::id())->wherePivot('role', 'admin')->exists();
-        $isGlobalAdmin = Auth::user()->global_role === 'admin';
-
-        if (!$isAuthor && !$isForumAdmin && !$isGlobalAdmin) {
-            abort(403, 'No tienes permisos para borrar esta publicación.');
+        // Solo el autor puede eliminar
+        if ($post->user_id !== Auth::id()) {
+            abort(403);
         }
 
         $post->delete();
 
         return back()->with('success', 'Publicación eliminada.');
+    }
+
+    // Funciones experimentales
+    public function create()
+    {
+        $communities = \App\Models\Community::all();
+        return view('posts.create', compact('communities'));
+    }
+
+    public function edit(Post $post)
+    {
+        // Solo el autor puede editar
+        if ($post->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('posts.edit', compact('post'));
+    }
+
+    public function update(Request $request, Post $post)
+    {
+        // Solo el autor puede editar
+        if ($post->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'title'   => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        $post->update($validated);
+
+        return redirect()->route('perfil')->with('success', 'Publicación actualizada.');
     }
 }

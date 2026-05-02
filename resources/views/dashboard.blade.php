@@ -167,13 +167,23 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold">{{ $post->user->name }} <span class="text-gray-500 font-normal text-xs">en</span> {{ $post->community->name }}</p>
+                                    <p class="text-sm font-semibold">{{ $post->user->name }}
+                                        @if($post->communities->isNotEmpty())
+                                            <span class="text-gray-500 font-normal text-xs">en</span> {{ $post->communities->first()->name }}
+                                        @endif
+                                    </p>
+
                                     <p class="text-xs text-muted-foreground">{{ $post->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                             @php
                                 $isAuthor = $post->user_id === Auth::id();
-                                $isForumAdmin = $post->community->users()->where('user_id', Auth::id())->wherePivot('role', 'admin')->exists();
+
+                                $community = $post->communities->first();
+                                $isForumAdmin = $community
+                                    ? $community->users()->where('user_id', Auth::id())->wherePivot('role', 'admin')->exists()
+                                    : false;
+
                                 $isGlobalAdmin = Auth::user()->global_role === 'admin';
                             @endphp
                             @if($isAuthor || $isForumAdmin || $isGlobalAdmin)
@@ -181,6 +191,9 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-700 text-xs">Eliminar</button>
+                                <a href="{{ route('posts.edit', $post) }}" class="text-blue-500 hover:text-blue-400 text-xs">
+                                    Editar
+                                </a>
                             </form>
                             @endif
                         </div>

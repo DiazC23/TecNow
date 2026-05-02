@@ -1,20 +1,30 @@
 <?php
 
+/*
+ * Modelo para gestionar la información de los modelos.
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Post extends Model
 {
-    protected $fillable = ['community_id', 'user_id', 'title', 'content'];
+    protected $fillable = [
+        'user_id',
+        'title',
+        'content'
+    ];
 
-    public function user()
+    public function communities(): BelongsToMany
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(Community::class);
     }
 
-    public function community()
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Community::class);
+        return $this->belongsTo(User::class);
     }
 }
