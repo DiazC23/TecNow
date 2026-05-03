@@ -74,4 +74,11 @@ class PostController extends Controller
 
         return redirect()->route('perfil')->with('success', 'Publicación actualizada.');
     }
+
+    public function show(Post $post)
+    {
+        $post->load(['user', 'communities', 'votes']);
+        $communities = \App\Models\Community::withCount('users')->get();
+        return view('posts.show', compact('post', 'communities'));
+    }
 }

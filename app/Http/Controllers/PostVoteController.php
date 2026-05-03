@@ -24,18 +24,15 @@ class PostVoteController extends Controller
 
         if ($existing) {
             if ($existing->vote === $value) {
-                // Mismo voto → cancela (toggle)
                 PostVote::where('user_id', Auth::id())
                     ->where('post_id', $post->id)
                     ->delete();
             } else {
-                // Voto contrario → actualiza con query directa
                 PostVote::where('user_id', Auth::id())
                     ->where('post_id', $post->id)
                     ->update(['vote' => $value]);
             }
         } else {
-            // Voto nuevo
             PostVote::create([
                 'user_id' => Auth::id(),
                 'post_id' => $post->id,
@@ -43,6 +40,15 @@ class PostVoteController extends Controller
             ]);
         }
 
-        return back();
+        // Karma actualizado
+        $karma = PostVote::where('post_id', $post->id)->sum('vote');
+        $userVote = PostVote::where('user_id', Auth::id())
+            ->where('post_id', $post->id)
+            ->value('vote');
+
+        return response()->json([
+            'karma'     => $karma,
+            'user_vote' => $userVote, // null si canceló, 1 o -1 si votó
+        ]);
     }
 }

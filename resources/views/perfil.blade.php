@@ -164,8 +164,16 @@
                         <div class="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-semibold text-gray-800 truncate">{{ $post->title }}</h3>
-                                    <p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ $post->content }}</p>
+                                    {{-- Título --}}
+                                    <a href="{{ route('posts.show', $post) }}">
+                                        <h3 class="text-lg font-bold mb-2 hover:text-primary transition-colors">{{ $post->title }}</h3>
+                                    </a>
+
+                                    {{-- Contenido --}}
+                                    <a href="{{ route('posts.show', $post) }}">
+                                        <p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ $post->content }}</p>
+                                    </a>
+
                                     <p class="text-xs text-muted-foreground mt-2">{{ $post->created_at->diffForHumans() }}</p>
 
                                     {{-- Gestor de Karma --}}
@@ -174,48 +182,71 @@
                                         $karma     = $post->votes->sum('vote');
                                         $userVote  = $post->votes->where('user_id', Auth::id())->first()?->vote;
                                     @endphp
-                                    <div class="flex items-center gap-1 mt-2">
+                                    {{-- Karma --}}
+                                    <div class="flex items-center gap-1 mt-2"
+                                         x-data="{
+                                            karma: {{ $karma }},
+                                            userVote: {{ $userVote ?? 'null' }},
+                                            loading: false,
+                                            async vote(value) {
+                                                if (this.loading) return;
+                                                this.loading = true;
+                                                try {
+                                                    const res = await fetch('{{ route('posts.vote', $post) }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                        },
+                                                        body: JSON.stringify({ vote: value }),
+                                                    });
+                                                    const data = await res.json();
+                                                    this.karma = data.karma;
+                                                    this.userVote = data.user_vote;
+
+                                                } finally {
+                                                    this.loading = false;
+                                                }
+                                            }
+                                        }">
 
                                         {{-- Upvote --}}
-                                        <form action="{{ route('posts.vote', $post) }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="vote" value="1" />
-                                            <button type="submit"
-                                                    class="relative group p-1.5 rounded-lg transition-colors
-                                                {{ $userVote === 1 ? 'text-orange-400 bg-orange-500/10' : 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10' }}">
-                                                <svg class="w-4 h-4" fill="{{ $userVote === 1 ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                                </svg>
-                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
-                                                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                            Upvote
+                                        <button type="button" @click="vote(1)"
+                                                :disabled="loading"
+                                                :class="userVote === 1
+                                                    ? 'text-orange-400 bg-orange-500/10'
+                                                    : 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10'"
+                                                class="relative group p-1.5 rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" :fill="userVote === 1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                                             opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                Upvote
                                             </span>
-                                            </button>
-                                        </form>
+                                        </button>
 
                                         {{-- Contador --}}
-                                        <span class="text-sm font-semibold min-w-[2rem] text-center
-                                        {{ $karma > 0 ? 'text-orange-400' : ($karma < 0 ? 'text-blue-400' : 'text-gray-400') }}">
-                                        {{ $karma }}
-                                    </span>
+                                        <span class="text-sm font-semibold min-w-[2rem] text-center"
+                                              :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-400'"
+                                              x-text="karma">
+                                        </span>
 
                                         {{-- Downvote --}}
-                                        <form action="{{ route('posts.vote', $post) }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="vote" value="-1" />
-                                            <button type="submit"
-                                                    class="relative group p-1.5 rounded-lg transition-colors
-                                        {{ $userVote === -1 ? 'text-blue-400 bg-blue-500/10' : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10' }}">
-                                                <svg class="w-4 h-4" fill="{{ $userVote === -1 ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
-                                                    opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                        Downvote
-                                        </span>
-                                            </button>
-                                        </form>
-
+                                        <button type="button" @click="vote(-1)"
+                                                :disabled="loading"
+                                                :class="userVote === -1
+                                                    ? 'text-blue-400 bg-blue-500/10'
+                                                    : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'"
+                                                class="relative group p-1.5 rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" :fill="userVote === -1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                                             opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                Downvote
+                                            </span>
+                                        </button>
                                     </div>
                                     {{-- Fin del gestor de Karma--}}
 
