@@ -26,15 +26,26 @@ Route::middleware('auth')->group(function () {
 
     // Nueva ruta experimental
     Route::get('/perfil', function () {
-        $posts = \App\Models\Post::where('user_id', Auth::id())
+        $user = Auth::user();
+        $posts = $user->posts()
             ->with('votes')
             ->latest()
             ->get();
-        return view('perfil', compact('posts'));
+
+        $postsCount = $user->posts()->count();
+        $likesCount = \App\Models\PostVote::whereIn('post_id', $user->posts()->pluck('id'))
+            ->where('vote', 1)
+            ->count();
+        $commentsCount = $user->comments()->count();
+
+        return view('perfil', compact('posts', 'postsCount', 'likesCount', 'commentsCount'));
     })->name('perfil');
 
     Route::patch('/perfil', [ProfileController::class, 'update'])->name('perfil.update');
     Route::patch('/perfil/password', [ProfileController::class, 'updatePassword'])->name('perfil.password');
+
+    // Perfil público de otros usuarios
+    Route::get('/perfil/{username}', [ProfileController::class, 'showPublic'])->name('perfil.show');
 
     // Communities and Posts
     Route::post('/communities', [CommunityController::class, 'store'])->name('communities.store');

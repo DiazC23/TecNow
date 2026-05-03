@@ -2,12 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
+    public function showPublic($username)
+    {
+        $user = User::where('username', $username)->firstOrFail();
+        $posts = $user->posts()
+            ->with('votes')
+            ->latest()
+            ->get();
+
+        $postsCount = $user->posts()->count();
+        $likesCount = \App\Models\PostVote::whereIn('post_id', $user->posts()->pluck('id'))
+            ->where('vote', 1)
+            ->count();
+        $commentsCount = $user->comments()->count();
+
+        return view('perfil_publico', compact('user', 'posts', 'postsCount', 'likesCount', 'commentsCount'));
+    }
+
     public function update(Request $request)
     {
         $request->validate([
