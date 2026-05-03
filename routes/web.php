@@ -61,6 +61,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
+    Route::get('/popular', [PostController::class, 'popular'])->name('popular');
+    Route::get('/trending', [PostController::class, 'trending'])->name('trending');
+
     // Funciones experimentales
     Route::post('/posts/{post}/vote', [PostVoteController::class, 'vote'])->name('posts.vote');
 });

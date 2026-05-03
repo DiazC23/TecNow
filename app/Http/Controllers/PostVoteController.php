@@ -40,6 +40,9 @@ class PostVoteController extends Controller
             ]);
         }
 
+        $post->refresh();
+        $post->updateHotScore();
+
         // Karma actualizado
         $karma = PostVote::where('post_id', $post->id)->sum('vote');
         $userVote = PostVote::where('user_id', Auth::id())

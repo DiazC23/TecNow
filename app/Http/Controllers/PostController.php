@@ -81,4 +81,25 @@ class PostController extends Controller
         $communities = \App\Models\Community::withCount('users')->get();
         return view('posts.show', compact('post', 'communities'));
     }
+
+    public function popular()
+    {
+        $communities = Community::withCount('users')->get();
+        $posts = Post::with(['user', 'communities', 'votes'])
+            ->orderByDesc('hot_score')
+            ->get();
+
+        return view('popular', compact('communities', 'posts'));
+    }
+
+    public function trending()
+    {
+        $communities = Community::withCount('users')->get();
+        $posts = Post::with(['user', 'communities', 'votes'])
+            ->where('created_at', '>=', now()->subHours(48))
+            ->orderByDesc('hot_score')
+            ->get();
+
+        return view('popular', compact('communities', 'posts'));
+    }
 }

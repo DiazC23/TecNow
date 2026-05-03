@@ -17,7 +17,12 @@ class Post extends Model
     protected $fillable = [
         'user_id',
         'title',
-        'content'
+        'content',
+        'hot_score',
+    ];
+
+    protected $casts = [
+        'hot_score' => 'float',
     ];
 
     public function communities(): BelongsToMany
@@ -54,5 +59,15 @@ class Post extends Model
     {
         $vote = $this->votes()->where('user_id', Auth::id())->first();
         return $vote?->vote;
+    }
+
+    public function updateHotScore(): void
+    {
+        $votes = $this->votes()->sum('vote');
+        $hours = max(0, $this->created_at->diffInSeconds(now()) / 3600);
+        $score = $hours === 0 ? $votes / pow(2, 1.5) : $votes / pow($hours + 2, 1.5);
+
+        $this->hot_score = $score;
+        $this->saveQuietly();
     }
 }
