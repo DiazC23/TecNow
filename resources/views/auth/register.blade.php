@@ -40,25 +40,29 @@
                                         class="w-full h-full rounded-full border-4 border-primary object-cover shadow-md" />
                                     <button type="button"
                                         onclick="document.getElementById('avatarModal').classList.remove('hidden')"
-                                        class="absolute bottom-0 right-0 bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform z-20">
+                                        class="absolute bottom-0 right-0 text-white w-7 h-7 rounded-full flex items-center justify-center shadow transition-transform hover:scale-110 z-20"
+                                        style="background-color: #1e40af;">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
                                         </svg>
                                     </button>
                                 </div>
-                                <input type="hidden" name="avatar" id="avatarField" value="{{ $avatars[0] ?? 'avatar_default.png' }}" />
+                                <input type="hidden" name="avatar" id="avatarField"
+                                    value="{{ $avatars[0] ?? 'avatar_default.png' }}" />
                             </div>
 
                             <div class="relative text-center">
                                 <p class="text-xs text-gray-500 mb-1">Marco</p>
                                 <div class="relative w-20 h-20 bg-gray-100 rounded-full border-4 border-gray-200">
-                                    <img id="marcoPreview" src=""
-                                        class="w-full h-full object-cover z-10 hidden" />
+                                    <img id="marcoPreview" src="" class="w-full h-full object-cover z-10 hidden" />
                                     <button type="button"
                                         onclick="document.getElementById('marcoModal').classList.remove('hidden')"
-                                        class="absolute bottom-0 right-0 bg-primary text-white w-7 h-7 rounded-full flex items-center justify-center shadow hover:scale-110 transition-transform z-20">
+                                        class="absolute bottom-0 right-0 text-white w-7 h-7 rounded-full flex items-center justify-center shadow transition-transform hover:scale-110 z-20"
+                                        style="background-color: #1e40af;">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-3z" />
                                         </svg>
                                     </button>
                                 </div>
@@ -147,7 +151,8 @@
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-primary text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-medium">
+                        class="w-full justify-center hover:scale-105 transition-transform text-sm flex items-center gap-2 px-4 py-2 rounded-lg font-medium"
+                        style="border: 3px solid #1e40af; background-color: #1e40af; color: white;">
                         Crear cuenta
                     </button>
                 </form>
@@ -189,8 +194,8 @@
 
     {{-- Modal marcos --}}
     <div id="marcoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
-        <div class="absolute inset-0 bg-black/60"
-            onclick="document.getElementById('marcoModal').classList.add('hidden')"></div>
+        <div class="absolute inset-0 bg-black/60" onclick="document.getElementById('marcoModal').classList.add('hidden')">
+        </div>
         <div class="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm z-10">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-gray-900">Elige tu marco</h3>
@@ -202,7 +207,8 @@
                 </button>
             </div>
             <div class="grid grid-cols-4 gap-3">
-                <button type="button" onclick="selectMarco('')" class="rounded-full flex items-center justify-center bg-gray-100 text-gray-500 text-xs aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all">
+                <button type="button" onclick="selectMarco('')"
+                    class="rounded-full flex items-center justify-center bg-gray-100 text-gray-500 text-xs aspect-square hover:ring-4 hover:ring-primary hover:ring-offset-2 transition-all">
                     Ninguno
                 </button>
                 @foreach ($marcos as $marco)
@@ -221,6 +227,7 @@
             document.getElementById('avatarField').value = filename;
             document.getElementById('avatarModal').classList.add('hidden');
         }
+
         function selectMarco(filename) {
             let preview = document.getElementById('marcoPreview');
             if (filename) {

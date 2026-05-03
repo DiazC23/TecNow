@@ -119,7 +119,7 @@
 
         {{-- Stats representativas --}}
         <div class="grid grid-cols-3 gap-4 mb-6">
-            @foreach ([['0', 'Publicaciones'], ['0', 'Votos recibidos'], ['0', 'Comentarios']] as [$num, $label])
+            @foreach ([[$postsCount, 'Publicaciones'], [$likesCount, 'Likes'], [$commentsCount, 'Comentarios']] as [$num, $label])
                 <div class="bg-card border border-border rounded-xl p-4 text-center">
                     <p class="text-2xl font-bold text-primary">{{ $num }}</p>
                     <p class="text-xs text-muted-foreground mt-1">{{ $label }}</p>
