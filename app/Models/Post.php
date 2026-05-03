@@ -1,20 +1,53 @@
 <?php
 
+/*
+ * Modelo para gestionar la información de los modelos.
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
 class Post extends Model
 {
-    protected $fillable = ['community_id', 'user_id', 'title', 'content'];
+    protected $fillable = [
+        'user_id',
+        'title',
+        'content'
+    ];
 
-    public function user()
+    public function communities(): BelongsToMany
+    {
+        return $this->belongsToMany(Community::class);
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function community()
+    // Código experimental
+
+    // Función para Karma
+    public function votes(): HasMany
     {
-        return $this->belongsTo(Community::class);
+        return $this->hasMany(PostVote::class);
+    }
+
+    // Karma total calculado
+    public function getKarmaAttribute(): int
+    {
+        return $this->votes()->sum('vote');
+    }
+
+    // Voto del usuario autenticado sobre este post
+    public function userVote(): ?int
+    {
+        $vote = $this->votes()->where('user_id', Auth::id())->first();
+        return $vote?->vote;
     }
 }

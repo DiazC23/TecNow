@@ -18,8 +18,8 @@ class Community extends Model
         return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
     }
 
-    public function posts()
+    public function posts(): BelongsToMany
     {
-        return $this->hasMany(Post::class);
+        return $this->belongsToMany(Post::class);
     }
 }

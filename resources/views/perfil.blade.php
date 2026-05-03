@@ -38,6 +38,18 @@
         </div>
     </header>
 
+    {{-- BREADCRUMB --}}
+    <div class="max-w-[1400px] mx-auto px-6 py-4">
+        <div class="flex items-center gap-2 text-sm text-gray-400">
+            <a href="{{ route('dashboard') }}" class="hover:text-blue-400 transition-colors">Inicio</a>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+
+            <span class="text-gray-700">Mi Perfil</span>
+        </div>
+    </div>
+
     <div class="max-w-4xl mx-auto px-4 py-8">
 
         {{-- Tarjeta principal --}}
@@ -76,7 +88,7 @@
                     <div class="flex items-end justify-between -mt-12 mb-4 flex-wrap gap-10">
                         <button onclick="document.getElementById('passModal').classList.remove('hidden')"
                             class="hover:scale-105 transition-transform text-sm flex items-center gap-2 px-4 py-2 rounded-lg"
-                            style="border: 3px solid #ffffff; background-color: #fdfdfd; color: rgb(0, 0, 0);">
+                            style="border: 3px solid #1e40af; background-color: #fdfdfd; color: rgb(0, 0, 0);">
                             Cambiar contraseña
                         </button>
                         <button onclick="document.getElementById('editModal').classList.remove('hidden')"
@@ -115,17 +127,170 @@
             @endforeach
         </div>
 
-        {{-- Posts representativos --}}
+        {{-- Mis publicaciones --}}
         <div class="bg-card border border-border rounded-xl p-6">
-            <h2 class="text-base font-semibold mb-4">Mis publicaciones</h2>
-            <div class="text-center py-10">
-                <svg class="w-10 h-10 text-muted-foreground mx-auto mb-3" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
-                <p class="text-muted-foreground text-sm">Aún no tienes publicaciones.</p>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold">Mis publicaciones</h2>
+                <a href="{{ route('posts.create') }}"
+                   class="bg-primary text-gray-500 border border-gray-500 px-3 py-1.5 rounded-lg hover:bg-blue-700 hover:text-white transition-colors flex items-center gap-1.5 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva publicación
+                </a>
             </div>
+
+            @if($posts->isEmpty())
+                {{-- Estado vacío --}}
+                <div class="text-center py-10">
+                    <svg class="w-10 h-10 text-muted-foreground mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                    </svg>
+                    <p class="text-muted-foreground text-sm">Aún no tienes publicaciones.</p>
+                    <p class="text-gray-500 text-sm">¿Comenzamos con una?</p>
+                    <a href="{{ route('posts.create') }}"
+                       class="mt-4 inline-flex items-center gap-2 bg-primary text-gray-500 border border-gray-500 px-4 py-2 rounded-lg hover:bg-blue-700 hover:text-white transition-colors text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Nueva publicación
+                    </a>
+                </div>
+            @else
+                {{-- Lista de posts --}}
+                <div class="space-y-4">
+                    @foreach($posts as $post)
+                        <div class="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex-1 min-w-0">
+                                    {{-- Título --}}
+                                    <a href="{{ route('posts.show', $post) }}">
+                                        <h3 class="text-lg font-bold mb-2 hover:text-primary transition-colors">{{ $post->title }}</h3>
+                                    </a>
+
+                                    {{-- Contenido --}}
+                                    <a href="{{ route('posts.show', $post) }}">
+                                        <p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ $post->content }}</p>
+                                    </a>
+
+                                    <p class="text-xs text-muted-foreground mt-2">{{ $post->created_at->diffForHumans() }}</p>
+
+                                    {{-- Gestor de Karma --}}
+                                    {{-- Karma --}}
+                                    @php
+                                        $karma     = $post->votes->sum('vote');
+                                        $userVote  = $post->votes->where('user_id', Auth::id())->first()?->vote;
+                                    @endphp
+                                    {{-- Karma --}}
+                                    <div class="flex items-center gap-1 mt-2"
+                                         x-data="{
+                                            karma: {{ $karma }},
+                                            userVote: {{ $userVote ?? 'null' }},
+                                            loading: false,
+                                            async vote(value) {
+                                                if (this.loading) return;
+                                                this.loading = true;
+                                                try {
+                                                    const res = await fetch('{{ route('posts.vote', $post) }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                        },
+                                                        body: JSON.stringify({ vote: value }),
+                                                    });
+                                                    const data = await res.json();
+                                                    this.karma = data.karma;
+                                                    this.userVote = data.user_vote;
+
+                                                } finally {
+                                                    this.loading = false;
+                                                }
+                                            }
+                                        }">
+
+                                        {{-- Upvote --}}
+                                        <button type="button" @click="vote(1)"
+                                                :disabled="loading"
+                                                :class="userVote === 1
+                                                    ? 'text-orange-400 bg-orange-500/10'
+                                                    : 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10'"
+                                                class="relative group p-1.5 rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" :fill="userVote === 1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                                             opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                Upvote
+                                            </span>
+                                        </button>
+
+                                        {{-- Contador --}}
+                                        <span class="text-sm font-semibold min-w-[2rem] text-center"
+                                              :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-400'"
+                                              x-text="karma">
+                                        </span>
+
+                                        {{-- Downvote --}}
+                                        <button type="button" @click="vote(-1)"
+                                                :disabled="loading"
+                                                :class="userVote === -1
+                                                    ? 'text-blue-400 bg-blue-500/10'
+                                                    : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'"
+                                                class="relative group p-1.5 rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" :fill="userVote === -1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                                             opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                Downvote
+                                            </span>
+                                        </button>
+                                    </div>
+                                    {{-- Fin del gestor de Karma--}}
+
+                                </div>
+
+                                <div class="flex items-center gap-2 flex-shrink-0">
+
+                                    {{-- Editar --}}
+                                    <a href="{{ route('posts.edit', $post) }}"
+                                       class="relative group p-1.5 rounded-lg text-blue-500 hover:bg-blue-500/10 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                                                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                            Editar
+                                        </span>
+                                    </a>
+
+                                    {{-- Eliminar --}}
+                                    <form action="{{ route('posts.destroy', $post) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                onclick="return confirm('¿Eliminar esta publicación?')"
+                                                class="relative group p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                                                        opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                Eliminar
+                                            </span>
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </div>
 

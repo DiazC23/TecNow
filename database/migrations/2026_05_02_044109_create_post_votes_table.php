@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
-            $table->id();
+        Schema::create('post_votes', function (Blueprint $table) {
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('title');
-            $table->text('content');
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+            $table->tinyInteger('vote'); // 1 = upvote, -1 = downvote
+            $table->primary(['user_id', 'post_id']);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('posts');
+        Schema::dropIfExists('post_votes');
     }
 };
