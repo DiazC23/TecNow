@@ -9,45 +9,51 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+  use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'name',
-        'username',
-        'email',
-        'password',
-        'avatar',
-        'marco',
-        'global_role',
-        'security_question',
-        'security_answer',
+  protected $fillable = [
+    'name',
+    'username',
+    'email',
+    'password',
+    'avatar',
+    'marco',
+    'global_role',
+    'security_question',
+    'security_answer',
+    'rol',      // ← agregar esto
+    'activo',
+  ];
+
+  protected $hidden = [
+    'password',
+    'remember_token',
+  ];
+
+  protected function casts(): array
+  {
+    return [
+      'email_verified_at' => 'datetime',
+      'password' => 'hashed',
     ];
+  }
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+  public function communities()
+  {
+    return $this->belongsToMany(Community::class)->withPivot('role')->withTimestamps();
+  }
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+  public function posts()
+  {
+    return $this->hasMany(Post::class);
+  }
 
-    public function communities()
-    {
-        return $this->belongsToMany(Community::class)->withPivot('role')->withTimestamps();
-    }
-
-    public function posts()
-    {
-        return $this->hasMany(Post::class);
-    }
-
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
-    }
+  public function comments()
+  {
+    return $this->hasMany(Comment::class);
+  }
+  public function reportes()
+  {
+    return $this->hasMany(\App\Models\Reporte::class);
+  }
 }

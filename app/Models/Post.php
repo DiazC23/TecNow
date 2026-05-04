@@ -14,60 +14,61 @@ use Illuminate\Support\Facades\Auth;
 
 class Post extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'title',
-        'content',
-        'hot_score',
-    ];
+  protected $fillable = [
+    'user_id',
+    'title',
+    'content',
+    'hot_score',
+    'fijada',
+  ];
 
-    protected $casts = [
-        'hot_score' => 'float',
-    ];
+  protected $casts = [
+    'hot_score' => 'float',
+  ];
 
-    public function communities(): BelongsToMany
-    {
-        return $this->belongsToMany(Community::class);
-    }
+  public function communities(): BelongsToMany
+  {
+    return $this->belongsToMany(Community::class);
+  }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
+  public function user(): BelongsTo
+  {
+    return $this->belongsTo(User::class);
+  }
 
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class);
-    }
+  public function comments(): HasMany
+  {
+    return $this->hasMany(Comment::class);
+  }
 
-    // Código experimental
+  // Código experimental
 
-    // Función para Karma
-    public function votes(): HasMany
-    {
-        return $this->hasMany(PostVote::class);
-    }
+  // Función para Karma
+  public function votes(): HasMany
+  {
+    return $this->hasMany(PostVote::class);
+  }
 
-    // Karma total calculado
-    public function getKarmaAttribute(): int
-    {
-        return $this->votes()->sum('vote');
-    }
+  // Karma total calculado
+  public function getKarmaAttribute(): int
+  {
+    return $this->votes()->sum('vote');
+  }
 
-    // Voto del usuario autenticado sobre este post
-    public function userVote(): ?int
-    {
-        $vote = $this->votes()->where('user_id', Auth::id())->first();
-        return $vote?->vote;
-    }
+  // Voto del usuario autenticado sobre este post
+  public function userVote(): ?int
+  {
+    $vote = $this->votes()->where('user_id', Auth::id())->first();
+    return $vote?->vote;
+  }
 
-    public function updateHotScore(): void
-    {
-        $votes = $this->votes()->sum('vote');
-        $hours = max(0, $this->created_at->diffInSeconds(now()) / 3600);
-        $score = $hours === 0 ? $votes / pow(2, 1.5) : $votes / pow($hours + 2, 1.5);
+  public function updateHotScore(): void
+  {
+    $votes = $this->votes()->sum('vote');
+    $hours = max(0, $this->created_at->diffInSeconds(now()) / 3600);
+    $score = $hours === 0 ? $votes / pow(2, 1.5) : $votes / pow($hours + 2, 1.5);
 
-        $this->hot_score = $score;
-        $this->saveQuietly();
-    }
+    $this->hot_score = $score;
+    $this->saveQuietly();
+  }
 }
