@@ -90,7 +90,7 @@
       <div class="flex gap-2">
         @foreach (['popular' => 'Popular', 'reciente' => 'Reciente', 'trending' => 'Trending'] as $key => $label)
         <button @click="filter = '{{ $key }}'"
-          :class="filter === '{{ $key }}' ? 'bg-primary text-white' :
+          :class="filter === '{{ $key }}' ? 'bg-blue-700 text-white' :
                                 'bg-card hover:bg-muted text-foreground border border-border'"
           class="px-4 py-2 rounded-lg transition-colors text-sm">
           {{ $label }}
@@ -223,7 +223,7 @@
                                     const data = await res.json();
                                     this.karma = data.karma;
                                     this.userVote = data.user_vote;
-                        
+
                                 } finally {
                                     this.loading = false;
                                 }
