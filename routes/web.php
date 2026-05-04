@@ -21,10 +21,6 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     // Rutas para perfiles
-    // Ruta anterior que manejaba el mostrado de los perfiles, des-comentar en caso de mal funcionamiento y regresar a lo anterior
-    // Route::get('/perfil', fn() => view('perfil'))->name('perfil');
-
-    // Nueva ruta experimental
     Route::get('/perfil', function () {
         $user = Auth::user();
         $posts = $user->posts()
@@ -54,21 +50,29 @@ Route::middleware('auth')->group(function () {
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
-    // Rutas para manejar los posts de los usuarios
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create')->middleware('auth');
-
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
     // Funciones experimentales
     Route::post('/posts/{post}/vote', [PostVoteController::class, 'vote'])->name('posts.vote');
+
+    // Notificaciones
+    Route::get('/notificaciones', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notificaciones/{id}/leer', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notificaciones/leer-todas', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+
+    // Admin - Gestión de roles
+    Route::middleware('is_admin')->group(function () {
+        Route::get('/admin/usuarios', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.users');
+        Route::patch('/admin/usuarios/{user}/rol', [App\Http\Controllers\AdminController::class, 'updateRole'])->name('admin.users.updateRole');
+    });
 });
 
-// Recuperar contrasenas
+// Recuperar contraseñas
 Route::get('/recuperar', [RecoverPasswordController::class, 'show'])->name('recover.show');
 Route::post('/recuperar', [RecoverPasswordController::class, 'findUser'])->name('recover.find');
 Route::post('/recuperar/reset', [RecoverPasswordController::class, 'reset'])->name('recover.reset');
-
 
 require __DIR__.'/auth.php';

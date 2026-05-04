@@ -20,6 +20,17 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
+
+                <!-- 🔔 Campanita de notificaciones -->
+                <a href="{{ route('notifications.index') }}" class="relative inline-flex items-center px-3 py-2 me-2 text-gray-500 hover:text-gray-700 transition">
+                    🔔
+                    @if(auth()->user()->unreadNotifications->count())
+                        <span class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
+                    @endif
+                </a>
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -80,6 +91,17 @@
             </div>
 
             <div class="mt-3 space-y-1">
+
+                <!-- 🔔 Campanita en menú móvil -->
+                <x-responsive-nav-link :href="route('notifications.index')">
+                    🔔 Notificaciones
+                    @if(auth()->user()->unreadNotifications->count())
+                        <span class="ms-1 bg-red-500 text-white text-xs rounded-full px-1">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
+                    @endif
+                </x-responsive-nav-link>
+
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
