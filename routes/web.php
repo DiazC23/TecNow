@@ -68,10 +68,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/notificaciones/leer-todas', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
 
     // Admin - Gestión de roles
-    Route::middleware('is_admin')->group(function () {
-        Route::get('/admin/usuarios', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.users');
-        Route::patch('/admin/usuarios/{user}/rol', [App\Http\Controllers\AdminController::class, 'updateRole'])->name('admin.users.updateRole');
-    });
 });
 
 // Recuperar contraseñas
@@ -79,11 +75,7 @@ Route::get('/recuperar', [RecoverPasswordController::class, 'show'])->name('reco
 Route::post('/recuperar', [RecoverPasswordController::class, 'findUser'])->name('recover.find');
 Route::post('/recuperar/reset', [RecoverPasswordController::class, 'reset'])->name('recover.reset');
 
-<<<<<<< HEAD
-
 require __DIR__.'/auth.php';
-
-
 
 // Administradores
 Route::prefix('admin')->middleware(['auth', 'esAdmin'])->name('admin.')->group(function () {
@@ -91,12 +83,9 @@ Route::prefix('admin')->middleware(['auth', 'esAdmin'])->name('admin.')->group(f
     Route::get('/reportes',                       [AdminController::class, 'reportes'])       ->name('reportes');
     Route::patch('/reportes/{reporte}/resolver',  [AdminController::class, 'resolverReporte'])->name('reportes.resolver');
     Route::get('/usuarios',                       [AdminController::class, 'usuarios'])       ->name('usuarios');
-    Route::patch('/usuarios/{user}/rol',          [AdminController::class, 'cambiarRol'])     ->name('usuarios.rol');
+    Route::patch('/usuarios/{user}/rol',          [AdminController::class, 'updateRole'])     ->name('usuarios.rol');
     Route::patch('/usuarios/{user}/suspender',    [AdminController::class, 'suspender'])      ->name('usuarios.suspender');
     Route::get('/posts',                          [AdminController::class, 'posts'])          ->name('posts');
     Route::patch('/posts/{post}/fijar',           [AdminController::class, 'fijarPost'])      ->name('posts.fijar');
     Route::delete('/posts/{post}',                [AdminController::class, 'eliminarPost'])   ->name('posts.eliminar');
 });
-=======
-require __DIR__.'/auth.php';
->>>>>>> ca510687c305ed0539a3435d7594b4b3302f8a56
