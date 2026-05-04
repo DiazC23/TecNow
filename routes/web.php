@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RecoverPasswordController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -75,3 +76,18 @@ Route::post('/recuperar/reset', [RecoverPasswordController::class, 'reset'])->na
 
 
 require __DIR__.'/auth.php';
+
+
+
+// Administradores
+Route::prefix('admin')->middleware(['auth', 'esAdmin'])->name('admin.')->group(function () {
+    Route::get('/',                               [AdminController::class, 'index'])          ->name('index');
+    Route::get('/reportes',                       [AdminController::class, 'reportes'])       ->name('reportes');
+    Route::patch('/reportes/{reporte}/resolver',  [AdminController::class, 'resolverReporte'])->name('reportes.resolver');
+    Route::get('/usuarios',                       [AdminController::class, 'usuarios'])       ->name('usuarios');
+    Route::patch('/usuarios/{user}/rol',          [AdminController::class, 'cambiarRol'])     ->name('usuarios.rol');
+    Route::patch('/usuarios/{user}/suspender',    [AdminController::class, 'suspender'])      ->name('usuarios.suspender');
+    Route::get('/posts',                          [AdminController::class, 'posts'])          ->name('posts');
+    Route::patch('/posts/{post}/fijar',           [AdminController::class, 'fijarPost'])      ->name('posts.fijar');
+    Route::delete('/posts/{post}',                [AdminController::class, 'eliminarPost'])   ->name('posts.eliminar');
+});
