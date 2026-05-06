@@ -36,11 +36,6 @@ class Post extends Model
     return $this->belongsTo(User::class);
   }
 
-  public function comments(): HasMany
-  {
-    return $this->hasMany(Comment::class);
-  }
-
   // Código experimental
 
   // Función para Karma
@@ -61,7 +56,6 @@ class Post extends Model
     $vote = $this->votes()->where('user_id', Auth::id())->first();
     return $vote?->vote;
   }
-
   public function updateHotScore(): void
   {
     $votes = $this->votes()->sum('vote');
@@ -71,4 +65,10 @@ class Post extends Model
     $this->hot_score = $score;
     $this->saveQuietly();
   }
+
+  // Código experimental - Comentarios.
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

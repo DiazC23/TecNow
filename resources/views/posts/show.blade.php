@@ -77,12 +77,12 @@
   <main class="flex-1 px-4 lg:px-6 py-6">
 
     {{-- Breadcrumb / volver --}}
-    <a href="{{ url()->previous() }}"
+    <a href="{{ route('dashboard') }}"
       class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors mb-6">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Volver
+      Ir al Inicio
     </a>
 
     {{-- Post --}}
@@ -227,6 +227,292 @@
         </button>
       </div>
     </div>
+
+      {{-- SECCIÓN DE COMENTARIOS --}}
+      <div class="mt-4 bg-card border border-border rounded-lg p-6">
+
+          {{-- Encabezado --}}
+          <h2 class="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">
+              {{ $comments->count() + $comments->sum(fn($c) => $c->replies->count()) }} comentarios
+          </h2>
+
+          {{-- Formulario nuevo comentario --}}
+          <form action="{{ route('comments.store', $post) }}" method="POST" class="mb-6">
+              @csrf
+              <div class="flex gap-3">
+                  <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-600 relative flex-shrink-0 mt-1">
+                      <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" />
+                      @if(Auth::user()->marco)
+                          <img src="{{ asset('marcos/' . Auth::user()->marco) }}" class="absolute inset-0 w-full h-full object-cover z-10" />
+                      @endif
+                  </div>
+                  <div class="flex-1">
+                    <textarea
+                        name="content"
+                        rows="2"
+                        placeholder="Escribe un comentario..."
+                        required
+                        class="w-full px-3 py-2 rounded-lg border border-border border-gray-200 bg-gray-100 text-gray-700 placeholder-gray-400
+                               focus:outline-none focus:border-primary transition-colors resize-none text-sm"
+                    ></textarea>
+                      <div class="flex justify-end mt-2">
+                          <button type="submit"
+                                  class="px-4 py-1.5 bg-gray-100 border border-gray-200 text-gray-700 text-sm rounded-lg hover:bg-blue-700 hover:text-white transition-colors">
+                              Comentar
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </form>
+
+          {{-- Lista de comentarios --}}
+          <div class="space-y-4">
+              @forelse($comments as $comment)
+                  @php
+                      $commentKarma    = $comment->votes->sum('vote');
+                      $commentUserVote = $comment->votes->where('user_id', Auth::id())->first()?->vote;
+                  @endphp
+
+                  <div class="flex gap-3">
+                      {{-- Avatar --}}
+                      <div class="w-8 h-8 rounded-full overflow-hidden border border-gray-600 relative flex-shrink-0 mt-1">
+                          <img src="{{ asset('avatars/' . $comment->user->avatar) }}" class="w-full h-full object-cover" />
+                          @if($comment->user->marco)
+                              <img src="{{ asset('marcos/' . $comment->user->marco) }}" class="absolute inset-0 w-full h-full object-cover z-10" />
+                          @endif
+                      </div>
+
+                      <div class="flex-1 min-w-0">
+                          {{-- Autor y fecha --}}
+                          <div class="flex items-center gap-2 mb-1">
+                              <span class="text-sm font-semibold">{{ $comment->user->name }}</span>
+                              <span class="text-xs text-muted-foreground">{{ $comment->created_at->diffForHumans() }}</span>
+                          </div>
+
+                          {{-- Contenido --}}
+                          <p class="text-sm text-foreground whitespace-pre-wrap">{{ $comment->content }}</p>
+
+                          {{-- Acciones del comentario --}}
+                          <div class="flex items-center gap-3 mt-2">
+
+                              {{-- Karma del comentario --}}
+                              <div class="flex items-center gap-1"
+                                   x-data="{
+                                     karma: {{ $commentKarma }},
+                                     userVote: {{ $commentUserVote ?? 'null' }},
+                                     loading: false,
+                                     async vote(value) {
+                                         if (this.loading) return;
+                                         this.loading = true;
+                                         try {
+                                             const res = await fetch('{{ route('comments.vote', $comment) }}', {
+                                                 method: 'POST',
+                                                 headers: {
+                                                     'Content-Type': 'application/json',
+                                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                 },
+                                                 body: JSON.stringify({ vote: value }),
+                                             });
+                                             const data = await res.json();
+                                             this.karma = data.karma;
+                                             this.userVote = data.user_vote;
+                                         } finally {
+                                             this.loading = false;
+                                         }
+                                     }
+                                 }">
+                                  <button type="button" @click="vote(1)" :disabled="loading"
+                                          :class="userVote === 1 ? 'text-orange-400' : 'text-gray-500 hover:text-orange-400'"
+                                          class="p-1 rounded transition-colors">
+                                      <svg class="w-3.5 h-3.5" :fill="userVote === 1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                      </svg>
+                                  </button>
+                                  <span class="text-xs font-semibold min-w-[1.2rem] text-center"
+                                        :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-500'"
+                                        x-text="karma"></span>
+                                  <button type="button" @click="vote(-1)" :disabled="loading"
+                                          :class="userVote === -1 ? 'text-blue-400' : 'text-gray-500 hover:text-blue-400'"
+                                          class="p-1 rounded transition-colors">
+                                      <svg class="w-3.5 h-3.5" :fill="userVote === -1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                      </svg>
+                                  </button>
+                              </div>
+
+                              {{-- Botón responder --}}
+                              <button type="button"
+                                      x-data="{ open: false }"
+                                      @click="open = !open"
+                                      x-ref="replyBtn"
+                                      class="text-xs text-gray-500 hover:text-primary transition-colors"
+                                      x-on:click="$nextTick(() => { if(open) $refs.replyInput.focus() })">
+                                  Responder
+                              </button>
+
+                              {{-- Eliminar comentario --}}
+                              @if($comment->user_id === Auth::id() || Auth::user()->global_role === 'admin')
+                                  <form action="{{ route('comments.destroy', $comment) }}" method="POST">
+                                      @csrf
+                                      @method('DELETE')
+                                      <button type="submit"
+                                              onclick="return confirm('¿Eliminar este comentario?')"
+                                              class="text-xs text-red-500 hover:text-red-400 transition-colors">
+                                          Eliminar
+                                      </button>
+                                  </form>
+                              @endif
+                          </div>
+
+                          {{-- Formulario de respuesta --}}
+                          <div x-data="{ open: false }" class="mt-2">
+                              <button type="button" @click="open = !open"
+                                      class="text-xs text-gray-500 hover:text-primary transition-colors hidden">
+                              </button>
+                              <div x-show="open" x-cloak class="mt-2">
+                                  <form action="{{ route('comments.store', $post) }}" method="POST">
+                                      @csrf
+                                      <input type="hidden" name="parent_id" value="{{ $comment->id }}" />
+                                      <div class="flex gap-2">
+                                          <div class="w-6 h-6 rounded-full overflow-hidden border border-gray-600 relative flex-shrink-0 mt-1">
+                                              <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" />
+                                          </div>
+                                          <div class="flex-1">
+                                            <textarea
+                                                name="content"
+                                                rows="2"
+                                                x-ref="replyInput"
+                                                placeholder="Escribe una respuesta..."
+                                                required
+                                                class="w-full px-3 py-2 rounded-lg border border-border bg-gray-900 text-white placeholder-gray-500
+                                                       focus:outline-none focus:border-primary transition-colors resize-none text-sm"
+                                            ></textarea>
+                                              <div class="flex justify-end gap-2 mt-1">
+                                                  <button type="button" @click="open = false"
+                                                          class="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors">
+                                                      Cancelar
+                                                  </button>
+                                                  <button type="submit"
+                                                          class="px-3 py-1 bg-primary text-white text-xs rounded-lg hover:bg-blue-700 transition-colors">
+                                                      Responder
+                                                  </button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </form>
+                              </div>
+                          </div>
+
+                          {{-- Respuestas (nivel 2) --}}
+                          @if($comment->replies->isNotEmpty())
+                              <div class="mt-3 space-y-3 border-l-2 border-border pl-4">
+                                  @foreach($comment->replies as $reply)
+                                      @php
+                                          $replyKarma    = $reply->votes->sum('vote');
+                                          $replyUserVote = $reply->votes->where('user_id', Auth::id())->first()?->vote;
+                                      @endphp
+
+                                      <div class="flex gap-3">
+                                          <div class="w-7 h-7 rounded-full overflow-hidden border border-gray-600 relative flex-shrink-0 mt-0.5">
+                                              <img src="{{ asset('avatars/' . $reply->user->avatar) }}" class="w-full h-full object-cover" />
+                                              @if($reply->user->marco)
+                                                  <img src="{{ asset('marcos/' . $reply->user->marco) }}" class="absolute inset-0 w-full h-full object-cover z-10" />
+                                              @endif
+                                          </div>
+                                          <div class="flex-1 min-w-0">
+                                              <div class="flex items-center gap-2 mb-1">
+                                                  <span class="text-sm font-semibold">{{ $reply->user->name }}</span>
+                                                  <span class="text-xs text-muted-foreground">{{ $reply->created_at->diffForHumans() }}</span>
+                                              </div>
+                                              <p class="text-sm text-foreground whitespace-pre-wrap">{{ $reply->content }}</p>
+
+                                              {{-- Acciones reply --}}
+                                              <div class="flex items-center gap-3 mt-2">
+                                                  {{-- Karma reply --}}
+                                                  <div class="flex items-center gap-1"
+                                                       x-data="{
+                                                         karma: {{ $replyKarma }},
+                                                         userVote: {{ $replyUserVote ?? 'null' }},
+                                                         loading: false,
+                                                         async vote(value) {
+                                                             if (this.loading) return;
+                                                             this.loading = true;
+                                                             try {
+                                                                 const res = await fetch('{{ route('comments.vote', $reply) }}', {
+                                                                     method: 'POST',
+                                                                     headers: {
+                                                                         'Content-Type': 'application/json',
+                                                                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                                     },
+                                                                     body: JSON.stringify({ vote: value }),
+                                                                 });
+                                                                 const data = await res.json();
+                                                                 this.karma = data.karma;
+                                                                 this.userVote = data.user_vote;
+                                                             } finally {
+                                                                 this.loading = false;
+                                                             }
+                                                         }
+                                                     }">
+                                                      <button type="button" @click="vote(1)" :disabled="loading"
+                                                              :class="userVote === 1 ? 'text-orange-400' : 'text-gray-500 hover:text-orange-400'"
+                                                              class="p-1 rounded transition-colors">
+                                                          <svg class="w-3.5 h-3.5" :fill="userVote === 1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                                          </svg>
+                                                      </button>
+                                                      <span class="text-xs font-semibold min-w-[1.2rem] text-center"
+                                                            :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-500'"
+                                                            x-text="karma"></span>
+                                                      <button type="button" @click="vote(-1)" :disabled="loading"
+                                                              :class="userVote === -1 ? 'text-blue-400' : 'text-gray-500 hover:text-blue-400'"
+                                                              class="p-1 rounded transition-colors">
+                                                          <svg class="w-3.5 h-3.5" :fill="userVote === -1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                          </svg>
+                                                      </button>
+                                                  </div>
+
+                                                  {{-- Eliminar reply --}}
+                                                  @if($reply->user_id === Auth::id() || Auth::user()->global_role === 'admin')
+                                                      <form action="{{ route('comments.destroy', $reply) }}" method="POST">
+                                                          @csrf
+                                                          @method('DELETE')
+                                                          <button type="submit"
+                                                                  onclick="return confirm('¿Eliminar esta respuesta?')"
+                                                                  class="text-xs text-red-500 hover:text-red-400 transition-colors">
+                                                              Eliminar
+                                                          </button>
+                                                      </form>
+                                                  @endif
+                                              </div>
+                                          </div>
+                                      </div>
+                                  @endforeach
+                              </div>
+                          @endif
+
+                      </div>
+                  </div>
+
+                  {{-- Separador entre comentarios --}}
+                  @unless($loop->last)
+                      <div class="border-t border-border"></div>
+                  @endunless
+
+              @empty
+                  <div class="text-center py-8">
+                      <svg class="w-10 h-10 text-muted-foreground mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      <p class="text-sm text-muted-foreground">No hay comentarios todavía.</p>
+                      <p class="text-xs text-gray-500 mt-1">¡Sé el primero en comentar!</p>
+                  </div>
+              @endforelse
+          </div>
+      </div>
+
   </main>
 
   {{-- ASIDE DERECHO --}}
