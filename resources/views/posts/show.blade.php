@@ -160,72 +160,92 @@
       <h1 class="text-xl font-bold mb-3">{{ $post->title }}</h1>
       <p class="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{{ $post->content }}</p>
 
-      {{-- Karma --}}
-      <div class="flex items-center gap-1 mt-2"
-        x-data="{
-                                karma: {{ $karma }},
-                                userVote: {{ $userVote ?? 'null' }},
-                                loading: false,
-                                async vote(value) {
-                                    if (this.loading) return;
-                                    this.loading = true;
-                                    try {
-                                        const res = await fetch('{{ route('posts.vote', $post) }}', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                            },
-                                            body: JSON.stringify({ vote: value }),
-                                        });
-                                        const data = await res.json();
-                                        this.karma = data.karma;
-                                        this.userVote = data.user_vote;
 
-                                    } finally {
-                                        this.loading = false;
-                                    }
+        {{-- Contenedor de Karma y Comentarios --}}
+        <div class="flex items-center gap-1 mt-2" x-data="{
+                            karma: {{ $karma }},
+                            userVote: {{ $userVote ?? 'null' }},
+                            loading: false,
+                            async vote(value) {
+                                if (this.loading) return;
+                                this.loading = true;
+                                try {
+                                    const res = await fetch('{{ route('posts.vote', $post) }}', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        },
+                                        body: JSON.stringify({ vote: value }),
+                                    });
+                                    const data = await res.json();
+                                    this.karma = data.karma;
+                                    this.userVote = data.user_vote;
+
+                                } finally {
+                                    this.loading = false;
                                 }
-                            }">
-
-        {{-- Upvote --}}
-        <button type="button" @click="vote(1)"
-          :disabled="loading"
-          :class="userVote === 1
-                                        ? 'text-orange-400 bg-orange-500/10'
-                                        : 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10'"
-          class="relative group p-1.5 rounded-lg transition-colors">
-          <svg class="w-4 h-4" :fill="userVote === 1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-          </svg>
-          <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                            }
+                        }">
+            <div class="flex items-center bg-gray-100 rounded-lg">
+                {{-- Upvote --}}
+                <button type="button" @click="vote(1)" :disabled="loading"
+                        :class="userVote === 1 ?
+                                    'text-orange-400 bg-orange-500/10' :
+                                    'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10'"
+                        class="relative group p-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" :fill="userVote === 1 ? 'currentColor' : 'none'"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 15l7-7 7 7" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
                                              opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-            Upvote
-          </span>
-        </button>
+                    Upvote
+                    </span>
+                </button>
 
-        {{-- Contador --}}
-        <span class="text-sm font-semibold min-w-[2rem] text-center"
-          :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-400'"
-          x-text="karma">
-        </span>
+                {{-- Contador --}}
+                <span class="text-sm font-semibold min-w-[2rem] text-center"
+                      :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-400'"
+                      x-text="karma">
+                </span>
 
-        {{-- Downvote --}}
-        <button type="button" @click="vote(-1)"
-          :disabled="loading"
-          :class="userVote === -1
-                                        ? 'text-blue-400 bg-blue-500/10'
-                                        : 'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'"
-          class="relative group p-1.5 rounded-lg transition-colors">
-          <svg class="w-4 h-4" :fill="userVote === -1 ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-          <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                {{-- Downvote --}}
+                <button type="button" @click="vote(-1)" :disabled="loading"
+                        :class="userVote === -1 ?
+                                    'text-blue-400 bg-blue-500/10' :
+                                    'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'"
+                        class="relative group p-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" :fill="userVote === -1 ? 'currentColor' : 'none'"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
                                              opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-            Downvote
-          </span>
-        </button>
-      </div>
+                    Downvote
+                    </span>
+                </button>
+            </div>
+
+            {{-- Separador --}}
+            <span class="text-gray-700 mx-1">·</span>
+
+            {{-- Contador de comentarios --}}
+            <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                <a href=""
+                   class="flex items-center gap-1.5 text-gray-400 hover:text-primary transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span class="text-sm">{{ $post->comments->count() }}</span>
+                </a>
+            </div>
+        </div>
     </div>
 
       {{-- SECCIÓN DE COMENTARIOS --}}
@@ -340,15 +360,53 @@
                                   </button>
                               </div>
 
-                              {{-- Botón responder --}}
-                              <button type="button"
-                                      x-data="{ open: false }"
-                                      @click="open = !open"
-                                      x-ref="replyBtn"
-                                      class="text-xs text-gray-500 hover:text-primary transition-colors"
-                                      x-on:click="$nextTick(() => { if(open) $refs.replyInput.focus() })">
-                                  Responder
-                              </button>
+                                {{-- Botón responder + formulario unificados --}}
+                                <div x-data="{ open: false }">
+
+                                    {{-- Botón responder --}}
+                                    <button type="button"
+                                            @click="open = !open"
+                                            class="text-xs text-gray-500 hover:text-primary transition-colors">
+                                        Responder
+                                    </button>
+
+                                    {{-- Formulario de respuesta --}}
+                                    <div x-show="open" x-cloak class="mt-2">
+                                        <form action="{{ route('comments.store', $post) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="parent_id" value="{{ $comment->id }}" />
+                                            <div class="flex gap-2">
+                                                {{-- Icono del perfil --}}
+                                                <div class="w-6 h-6 rounded-full overflow-hidden border border-gray-600 relative flex-shrink-0 mt-1">
+                                                    <img src="{{ asset('avatars/' . Auth::user()->avatar) }}" class="w-full h-full object-cover" />
+                                                </div>
+                                                <div class="flex-1">
+                                                    <textarea
+                                                        name="content"
+                                                        rows="3"
+                                                        x-ref="replyInput"
+                                                        x-effect="if(open) $nextTick(() => $refs.replyInput.focus())"
+                                                        placeholder="Escribe una respuesta..."
+                                                        required
+                                                        class="w-full md:w-[25rem] px-3 py-2 rounded-lg border border-border border-gray-200 bg-gray-100 placeholder-gray-400
+                                                        focus:outline-none focus:border-primary transition-colors resize-none text-sm"
+                                                    ></textarea>
+                                                    <div class="flex justify-end gap-2 mt-1">
+                                                        <button type="button" @click="open = false"
+                                                                class="px-3 py-1 text-xs text-gray-400 hover:text-red-400 transition-colors">
+                                                            Cancelar
+                                                        </button>
+                                                        <button type="submit"
+                                                                class="px-3 py-1 bg-gray-100 border border-gray-200 text-gray-700 text-xs rounded-lg hover:bg-blue-700 hover:text-white transition-colors">
+                                                            Responder
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                </div>
 
                               {{-- Eliminar comentario --}}
                               @if($comment->user_id === Auth::id() || Auth::user()->global_role === 'admin')

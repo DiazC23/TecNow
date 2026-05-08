@@ -18,7 +18,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $communities = \App\Models\Community::withCount('users')->get();
-        $posts = \App\Models\Post::with(['user', 'communities', 'votes'])->latest()->get();
+        $posts = \App\Models\Post::with(['user', 'communities', 'votes', 'comments'])->latest()->get();
 
         return view('dashboard', compact('communities', 'posts'));
     })->name('dashboard');
