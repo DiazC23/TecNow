@@ -8,6 +8,8 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentVoteController;
 
 Route::get('/', function () {
     return redirect('/dashboard');
@@ -16,7 +18,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $communities = \App\Models\Community::withCount('users')->get();
-        $posts = \App\Models\Post::with(['user', 'communities', 'votes'])->latest()->get();
+        $posts = \App\Models\Post::with(['user', 'communities', 'votes', 'comments'])->latest()->get();
 
         return view('dashboard', compact('communities', 'posts'));
     })->name('dashboard');
@@ -59,7 +61,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/popular', [PostController::class, 'popular'])->name('popular');
     Route::get('/trending', [PostController::class, 'trending'])->name('trending');
 
-    // Funciones experimentales
     Route::post('/posts/{post}/vote', [PostVoteController::class, 'vote'])->name('posts.vote');
 
     // Notificaciones
@@ -68,6 +69,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/notificaciones/leer-todas', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
 
     // Admin - Gestión de roles
+
+    // Rutas para gestión de Comentarios
+    Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/comments/{comment}/vote', [CommentVoteController::class, 'vote'])->name('comments.vote');
 });
 
 // Recuperar contraseñas

@@ -79,7 +79,15 @@ class PostController extends Controller
     {
         $post->load(['user', 'communities', 'votes']);
         $communities = \App\Models\Community::withCount('users')->get();
-        return view('posts.show', compact('post', 'communities'));
+
+        // Comentarios de primer nivel con sus replies y votos
+        $comments = $post->comments()
+            ->whereNull('parent_id')
+            ->with(['user', 'votes', 'replies.user', 'replies.votes'])
+            ->latest()
+            ->get();
+
+        return view('posts.show', compact('post', 'communities', 'comments'));
     }
 
     public function popular()

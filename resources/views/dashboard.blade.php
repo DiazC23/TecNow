@@ -191,8 +191,6 @@
           @endif
         </div>
 
-        {{-- Contenido --}}
-
         {{-- Título --}}
         <a href="{{ route('posts.show', $post) }}">
           <h3 class="text-lg font-bold mb-2 hover:text-primary transition-colors">{{ $post->title }}
@@ -201,9 +199,7 @@
         {{-- Contenido --}}
         <p class="text-sm text-foreground whitespace-pre-wrap mb-4">{{ $post->content }}</p>
 
-        {{-- Karma --}}
-
-        {{-- Karma --}}
+        {{-- Contenedor de Karma y Comentarios --}}
         <div class="flex items-center gap-1 mt-2" x-data="{
                             karma: {{ $karma }},
                             userVote: {{ $userVote ?? 'null' }},
@@ -229,48 +225,64 @@
                                 }
                             }
                         }">
-
-          {{-- Upvote --}}
-          <button type="button" @click="vote(1)" :disabled="loading"
-            :class="userVote === 1 ?
+            <div class="flex items-center bg-gray-100 rounded-lg">
+                {{-- Upvote --}}
+                <button type="button" @click="vote(1)" :disabled="loading"
+                        :class="userVote === 1 ?
                                     'text-orange-400 bg-orange-500/10' :
                                     'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10'"
-            class="relative group p-1.5 rounded-lg transition-colors">
-            <svg class="w-4 h-4" :fill="userVote === 1 ? 'currentColor' : 'none'"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5 15l7-7 7 7" />
-            </svg>
-            <span
-              class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                        class="relative group p-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" :fill="userVote === 1 ? 'currentColor' : 'none'"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 15l7-7 7 7" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
                                              opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Upvote
-            </span>
-          </button>
+                    Upvote
+                    </span>
+                </button>
 
-          {{-- Contador --}}
-          <span class="text-sm font-semibold min-w-[2rem] text-center"
-            :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-400'"
-            x-text="karma">
-          </span>
+                {{-- Contador --}}
+                <span class="text-sm font-semibold min-w-[2rem] text-center"
+                      :class="karma > 0 ? 'text-orange-400' : karma < 0 ? 'text-blue-400' : 'text-gray-400'"
+                      x-text="karma">
+                </span>
 
-          {{-- Downvote --}}
-          <button type="button" @click="vote(-1)" :disabled="loading"
-            :class="userVote === -1 ?
+                {{-- Downvote --}}
+                <button type="button" @click="vote(-1)" :disabled="loading"
+                        :class="userVote === -1 ?
                                     'text-blue-400 bg-blue-500/10' :
                                     'text-gray-400 hover:text-blue-400 hover:bg-blue-500/10'"
-            class="relative group p-1.5 rounded-lg transition-colors">
-            <svg class="w-4 h-4" :fill="userVote === -1 ? 'currentColor' : 'none'"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 9l-7 7-7-7" />
-            </svg>
-            <span
-              class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
+                        class="relative group p-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" :fill="userVote === -1 ? 'currentColor' : 'none'"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded
                                              opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Downvote
-            </span>
-          </button>
+                    Downvote
+                    </span>
+                </button>
+            </div>
+
+            {{-- Separador --}}
+            <span class="text-gray-700 mx-1">·</span>
+
+            {{-- Contador de comentarios --}}
+            <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                <a href="{{ route('posts.show', $post) }}"
+                   class="flex items-center gap-1.5 text-gray-400 hover:text-primary transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span class="text-sm">{{ $post->comments->count() }}</span>
+                </a>
+            </div>
         </div>
       </div>
       @empty
